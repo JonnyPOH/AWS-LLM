@@ -1,4 +1,3 @@
-
 I need to summarize a conversation. The transcript of the conversation is between the <data> XML like tags.
 
 <data>
@@ -6,7 +5,7 @@ I need to summarize a conversation. The transcript of the conversation is betwee
 </data>
 
 The summary must contain a one word sentiment analysis, and a list of issues, problems or causes of friction
-during the conversation. The output must be provided in JSON format shown in the following example. 
+during the conversation. The output must be provided in JSON format shown in the following example.
 
 Example output:
 {

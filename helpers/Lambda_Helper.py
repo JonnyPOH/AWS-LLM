@@ -6,33 +6,33 @@ import os
 
 
 
-class Lambda_Helper: 
+class Lambda_Helper:
 
     def __init__(self):
-        
+
         # Get the account ID being used
         sts_client = boto3.client('sts')
         response = sts_client.get_caller_identity()
         account_id = response['Account']
-        
+
         # Create a Boto3 client for the Lambda service
-        self.lambda_client = boto3.client('lambda', region_name='us-west-2')  
+        self.lambda_client = boto3.client('lambda', region_name='us-west-2')
         self.function_name = 'LambdaFunctionDLAICourse'
         self.role_arn = f"arn:aws:iam::{account_id}:role/LambdaRoleDLAICourse"
         self.function_description = "Lambda function uploaded by a notebook in a DLAI course."
         self.lambda_arn = ""
         self.lambda_environ_variables = {}
         self.filter_rules_suffix = ""
-        
+
         self.s3_client = boto3.client('s3', region_name='us-west-2')
-            
+
     def deploy_function(self, code_file_names, function_name=""):
 
         if function_name:
             self.function_name = function_name
         else:
             print(f"Using function name: {self.function_name}")
-        
+
         print('Zipping function...')
         zip_file_path = 'lambda_function.zip'
 
@@ -64,7 +64,7 @@ class Lambda_Helper:
                 Role=self.role_arn,
                 Handler='lambda_function.lambda_handler',
                 Description=self.function_description,
-                Layers=[os.environ['LAMBDALAYERVERSIONARN']],
+                Layers=[os.environ['LAMBDA_LAYER_VERSION_ARN']],
                 Timeout=120,
                 Code={
                     'ZipFile': open(zip_file_path, 'rb').read()
@@ -80,7 +80,7 @@ class Lambda_Helper:
             print(f"An error occurred: {e}")
             self.lambda_arn = ""
             print("Done, with error.")
-            
+
 
     def add_lambda_trigger(self, bucket_name, function_name=""):
 
@@ -88,12 +88,12 @@ class Lambda_Helper:
             self.function_name = function_name
         else:
             print(f"Using function name of deployed function: {self.function_name}")
-        
+
         # Check and remove existing permissions for the specific source (S3 bucket)
         try:
             policy = self.lambda_client.get_policy(FunctionName=self.function_name)['Policy']
             policy_dict = json.loads(policy)
-        
+
             for statement in policy_dict['Statement']:
                 if statement['Action'] == 'lambda:InvokeFunction' and self.lambda_arn in statement['Resource']:
                     self.lambda_client.remove_permission(
@@ -131,7 +131,7 @@ class Lambda_Helper:
         lambda_arn = self.lambda_client.get_function(
             FunctionName=self.function_name
         )['Configuration']['FunctionArn']
-                
+
         notification_configuration = {
             'LambdaFunctionConfigurations': [
                 {
@@ -150,7 +150,7 @@ class Lambda_Helper:
                 }
             ]
         }
-        
+
         try:
             self.s3_client.put_bucket_notification_configuration(
                 Bucket=bucket_name,

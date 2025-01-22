@@ -1,0 +1,13 @@
+
+```
+{
+    "version": 0.1,
+    "sentiment": "positive",
+    "issues": [
+        {
+            "topic": "charges",
+            "summary": "charges"
+        }
+    ]
+}
+```
